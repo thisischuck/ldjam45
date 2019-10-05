@@ -6,19 +6,11 @@ public class EnemyController : MonoBehaviour
 {
     //! Code Enemy Behaviours. And put randomness to them.
     //- different speeds can be a start
-
-    public enum Type
-    {
-        Normal, //1 hit 
-        Boss,  //2 hits
-        Defensive //3 hits
-    }
-
-    public Type tp;
-
     public Collider2D ground;
     public GameObject player;
     public GameScriptableObject g;
+
+    public GameObject[] hitboxes;
 
     public bool isOnGround = false;
     public int horizontalSpeed = 5;
@@ -33,6 +25,7 @@ public class EnemyController : MonoBehaviour
     private float xspeed = 0;
     private float xdir = 0;
 
+    private bool isAttacking, hit;
 
     private string hurt_tag;
 
@@ -50,13 +43,10 @@ public class EnemyController : MonoBehaviour
         ChangeHitBox();
 
         if (fly != 0)
+        {
             xspeed = 30 * fly;
-
-        if (tp == Type.Normal) hp = 1;
-        else if (tp == Type.Defensive) hp = 2;
-        else hp = 3;
-
-        StartCoroutine("KillMyself");
+            yspeed = 5;
+        }
     }
 
     void ChangeHitBox()
@@ -68,13 +58,23 @@ public class EnemyController : MonoBehaviour
             hurt_tag = "HitBoxLow";
             GetComponent<SpriteRenderer>().color = Color.green;
         }
-        else hurt_tag = "HitBoxHigh";
+        else
+        {
+            hurt_tag = "HitBoxHigh";
+            GetComponent<SpriteRenderer>().color = Color.red;
+        }
     }
 
 
     public void FlyLikeAnAngel(int isLeft)
     {
         fly = isLeft;
+    }
+
+    void Update()
+    {
+        if (!isAttacking)
+            Attack();
     }
 
     void FixedUpdate()
@@ -105,6 +105,12 @@ public class EnemyController : MonoBehaviour
             xspeed += xdir * 0.1f;
         }
 
+        if (hit)
+        {
+            xspeed = -xdir * 7;
+            yspeed = -gravity * 1.5f;
+        }
+
         body.velocity = new Vector2(xspeed, yspeed);
     }
 
@@ -114,8 +120,11 @@ public class EnemyController : MonoBehaviour
         {
             //! Either health system or just one shot kill
             //- most likely just one shot kill
-            Debug.Log(this + " Hurt");
-            hp--;
+            if (!hit)
+            {
+                hp--;
+                StartCoroutine("HitStagger");
+            }
             ChangeHitBox();
             if (hp == 0)
             {
@@ -126,9 +135,36 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    IEnumerator KillMyself()
+    void Attack()
     {
-        yield return new WaitForSecondsRealtime(2f);
-        Destroy(this.gameObject);
+        var distance = Vector3.Distance(this.transform.position, player.transform.position);
+        if (distance < 2)
+        {
+            StartCoroutine("AttackCooldown");
+            StartCoroutine("AttackTimer");
+            hitboxes[0].SetActive(true);
+            hitboxes[1].SetActive(true);
+        }
+
+    }
+
+    IEnumerator AttackCooldown()
+    {
+        isAttacking = true;
+        yield return new WaitForSecondsRealtime(1f);
+        isAttacking = false;
+    }
+    IEnumerator AttackTimer()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
+        hitboxes[0].SetActive(false);
+        hitboxes[1].SetActive(false);
+    }
+
+    IEnumerator HitStagger()
+    {
+        hit = true;
+        yield return new WaitForSecondsRealtime(0.25f);
+        hit = false;
     }
 }

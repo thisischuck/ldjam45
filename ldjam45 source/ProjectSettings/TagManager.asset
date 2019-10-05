@@ -6,6 +6,7 @@ TagManager:
   tags:
   - HitBoxHigh
   - HitBoxLow
+  - HitBoxEnemy
   layers:
   - Default
   - TransparentFX

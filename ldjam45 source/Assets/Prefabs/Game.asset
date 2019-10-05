@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e64f0105bd6cece44908c030a8756486, type: 3}
   m_Name: Game
   m_EditorClassIdentifier: 
-  Fame: 57
-  enemiesKilled: 14
+  Fame: 0
+  enemiesKilled: 0

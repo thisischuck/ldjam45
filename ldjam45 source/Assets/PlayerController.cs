@@ -10,6 +10,9 @@ public class PlayerController : MonoBehaviour
     public bool isOnGround = false;
     public int horizontalSpeed = 5;
     public int jumpSpeed = 20;
+    public int hp = 3;
+
+    public int invulTime = 10; //maybe frames
 
     private Rigidbody2D body;
 
@@ -20,6 +23,7 @@ public class PlayerController : MonoBehaviour
 
     private bool isFlipped = false;
     private bool isAttacking = false;
+    private bool isInvul = false;
 
     public GameObject[] hitboxes;
     public GameObject[] a;
@@ -31,6 +35,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (isInvul)
+            GetComponent<SpriteRenderer>().color = Color.grey;
+        else
+            GetComponent<SpriteRenderer>().color = Color.blue;
+
+
         if (body.IsTouching(ground))
         {
             yspeed = 0;
@@ -72,7 +82,7 @@ public class PlayerController : MonoBehaviour
         body.velocity = new Vector2(xspeed, yspeed);
     }
 
-    void Attack()
+    int Attack()
     {
         if (Input.GetKeyDown(KeyCode.J))
         {
@@ -80,6 +90,8 @@ public class PlayerController : MonoBehaviour
             if (!isFlipped)
                 hitboxes[0].SetActive(true);
             else hitboxes[2].SetActive(true);
+
+            return 0;
         }
         else
         {
@@ -93,12 +105,16 @@ public class PlayerController : MonoBehaviour
             if (!isFlipped)
                 hitboxes[1].SetActive(true);
             else hitboxes[3].SetActive(true);
+
+            return 0;
         }
         else
         {
             hitboxes[1].SetActive(false);
             hitboxes[3].SetActive(false);
         }
+
+        return -1;
     }
 
     IEnumerator AttackCooldown()
@@ -107,4 +123,31 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSecondsRealtime(0.2f);
         isAttacking = false;
     }
+
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        if (col.collider.tag.Equals("HitBoxEnemy"))
+        {
+            //! Either health system or just one shot kill
+            //- most likely just one shot kill
+            if (!isInvul)
+            {
+                hp--;
+                StartCoroutine("Invulnerability");
+            }
+            if (hp == 0)
+            {
+                Debug.Log("KnockedDown");
+                //KnockDownMode
+            }
+        }
+    }
+
+    IEnumerator Invulnerability()
+    {
+        isInvul = true;
+        yield return new WaitForSecondsRealtime(invulTime);
+        isInvul = false;
+    }
+
 }

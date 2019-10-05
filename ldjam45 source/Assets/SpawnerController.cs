@@ -41,10 +41,11 @@ public class SpawnerController : MonoBehaviour
     {
         started = true;
         Vector3 position;
-        yield return new WaitForSecondsRealtime(0.75f);
+        yield return new WaitForSecondsRealtime(2f);
 
         var index = Random.Range(0, list.Count);
 
+        #region Position
         int r = list[index];
         if (r == 0) position = leftSpawner;
         else if (r == 1) position = rightSpawner;
@@ -52,12 +53,14 @@ public class SpawnerController : MonoBehaviour
         else if (r == 3) position = topRight;
         else if (r == 4) position = midLeft;
         else position = midRight;
+        #endregion
 
         list.RemoveAt(index);
         if (list.Count == 0)
             Fill();
 
         GameObject obj = Instantiate(enemyParent, position, this.transform.rotation);
+        obj.GetComponent<EnemyController>().hp = Random.Range(1, 4);
 
         if (r == 4)
             obj.GetComponent<EnemyController>().FlyLikeAnAngel(1);
