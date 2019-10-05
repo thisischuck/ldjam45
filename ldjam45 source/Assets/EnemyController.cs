@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class EnemyController : MonoBehaviour
 {
     // Start is called before the first frame update
     public Collider2D ground;
+    public GameObject player;
 
     public bool isOnGround = false;
     public int horizontalSpeed = 5;
@@ -18,8 +19,6 @@ public class PlayerController : MonoBehaviour
     private float xspeed = 0;
     private float xdir = 0;
 
-    public GameObject[] hitboxes;
-
     void Start()
     {
         body = this.GetComponent<Rigidbody2D>();
@@ -27,8 +26,6 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        Attack();
-        //! This is kinda slow. Needs to be a bit faster. Or i need to tweak the values
         if (body.IsTouching(ground))
         {
             yspeed = 0;
@@ -36,12 +33,14 @@ public class PlayerController : MonoBehaviour
         }
         else isOnGround = false;
 
-        xdir = Input.GetAxisRaw("Horizontal");
+        Vector2 dir = player.transform.position - this.transform.position;
+
+        xdir = dir.normalized.x;
 
         if (isOnGround)
         {
             xspeed = xdir * horizontalSpeed;
-            if (Input.GetKey(KeyCode.Space))
+            if (dir.normalized.y > 0.7f)
             {
                 yspeed += jumpSpeed;
                 isOnGround = false;
@@ -54,18 +53,5 @@ public class PlayerController : MonoBehaviour
         }
 
         body.velocity = new Vector2(xspeed, yspeed);
-    }
-
-    void Attack()
-    {
-        foreach (var tmp in hitboxes)
-        {
-            tmp.SetActive(false);
-        }
-
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            hitboxes[0].SetActive(true);
-        }
     }
 }
