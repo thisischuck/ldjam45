@@ -18,23 +18,39 @@ public class PlayerController : MonoBehaviour
     private float xspeed = 0;
     private float xdir = 0;
 
+    private bool isFlipped = false;
+    private bool isAttacking = false;
+
     public GameObject[] hitboxes;
+    public GameObject[] a;
 
     void Start()
     {
         body = this.GetComponent<Rigidbody2D>();
     }
 
-    void FixedUpdate()
+    void Update()
     {
-        Attack();
-        //! This is kinda slow. Needs to be a bit faster. Or i need to tweak the values
         if (body.IsTouching(ground))
         {
             yspeed = 0;
             isOnGround = true;
         }
         else isOnGround = false;
+
+        if (xdir < 0)
+            isFlipped = true;
+        else if (xdir > 0)
+            isFlipped = false;
+
+
+        if (!isAttacking)
+            Attack();
+    }
+
+    void FixedUpdate()
+    {
+        //! This is kinda slow. Needs to be a bit faster. Or i need to tweak the values
 
         xdir = Input.GetAxisRaw("Horizontal");
 
@@ -58,14 +74,37 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
-        foreach (var tmp in hitboxes)
-        {
-            tmp.SetActive(false);
-        }
-
         if (Input.GetKeyDown(KeyCode.J))
         {
-            hitboxes[0].SetActive(true);
+            StartCoroutine("AttackCooldown");
+            if (!isFlipped)
+                hitboxes[0].SetActive(true);
+            else hitboxes[2].SetActive(true);
         }
+        else
+        {
+            hitboxes[0].SetActive(false);
+            hitboxes[2].SetActive(false);
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            StartCoroutine("AttackCooldown");
+            if (!isFlipped)
+                hitboxes[1].SetActive(true);
+            else hitboxes[3].SetActive(true);
+        }
+        else
+        {
+            hitboxes[1].SetActive(false);
+            hitboxes[3].SetActive(false);
+        }
+    }
+
+    IEnumerator AttackCooldown()
+    {
+        isAttacking = true;
+        yield return new WaitForSecondsRealtime(0.2f);
+        isAttacking = false;
     }
 }
