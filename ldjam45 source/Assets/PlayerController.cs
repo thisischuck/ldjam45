@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
     // Start is called before the first frame update
     public Collider2D ground;
+    public GameScriptableObject gm;
 
     public bool isOnGround = false;
     public int horizontalSpeed = 5;
@@ -35,6 +37,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (gm.isKnockedDown)
+        {
+            CheckMash();
+            return;
+        }
+
         if (isInvul)
             GetComponent<SpriteRenderer>().color = Color.grey;
         else
@@ -62,6 +70,12 @@ public class PlayerController : MonoBehaviour
     {
         //! This is kinda slow. Needs to be a bit faster. Or i need to tweak the values
 
+        if (gm.isKnockedDown)
+        {
+            body.velocity = Vector2.zero;
+            return;
+        }
+
         xdir = Input.GetAxisRaw("Horizontal");
 
         if (isOnGround)
@@ -82,7 +96,7 @@ public class PlayerController : MonoBehaviour
         body.velocity = new Vector2(xspeed, yspeed);
     }
 
-    int Attack()
+    void Attack()
     {
         if (Input.GetKeyDown(KeyCode.J))
         {
@@ -91,7 +105,7 @@ public class PlayerController : MonoBehaviour
                 hitboxes[0].SetActive(true);
             else hitboxes[2].SetActive(true);
 
-            return 0;
+            return;
         }
         else
         {
@@ -106,7 +120,7 @@ public class PlayerController : MonoBehaviour
                 hitboxes[1].SetActive(true);
             else hitboxes[3].SetActive(true);
 
-            return 0;
+            return;
         }
         else
         {
@@ -114,7 +128,7 @@ public class PlayerController : MonoBehaviour
             hitboxes[3].SetActive(false);
         }
 
-        return -1;
+        return;
     }
 
     IEnumerator AttackCooldown()
@@ -138,6 +152,8 @@ public class PlayerController : MonoBehaviour
             if (hp == 0)
             {
                 Debug.Log("KnockedDown");
+                gm.isKnockedDown = true;
+                gm.count = gm.MainCount;
                 //KnockDownMode
             }
         }
@@ -150,4 +166,44 @@ public class PlayerController : MonoBehaviour
         isInvul = false;
     }
 
+    int keyPressLoss = 3;
+
+    bool cStarted;
+    IEnumerator Countdown()
+    {
+        cStarted = true;
+        yield return new WaitForSecondsRealtime(1);
+        gm.count--;
+        gm.keyPresses -= keyPressLoss;
+        if (gm.keyPresses < 0) gm.keyPresses = 0;
+        cStarted = false;
+    }
+
+    int getUpThreshold = 40;
+    void CheckMash()
+    {
+        if (Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.K)) gm.keyPresses++;
+
+        if (gm.count <= 0)
+        {
+            if (gm.keyPresses >= getUpThreshold)
+            {
+                //you win and can keep playing
+                Debug.Log("You Win");
+                hp = 3;
+                gm.MainCount--;
+                keyPressLoss += 1;
+                gm.keyPresses = 0;
+                gm.restarted = true;
+                gm.isKnockedDown = false;
+                return;
+            }
+            else
+            {
+                Debug.Log("You Lose");
+                SceneManager.LoadScene(0);
+            }
+        }
+        else if (!cStarted) StartCoroutine("Countdown");
+    }
 }

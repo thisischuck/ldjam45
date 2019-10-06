@@ -73,12 +73,21 @@ public class EnemyController : MonoBehaviour
 
     void Update()
     {
+        if (g.isKnockedDown)
+            return;
+
         if (!isAttacking)
             Attack();
     }
 
     void FixedUpdate()
     {
+        if (g.isKnockedDown)
+        {
+            KnockDown();
+            return;
+        }
+
         if (body.IsTouching(ground))
         {
             yspeed = 0;
@@ -146,6 +155,18 @@ public class EnemyController : MonoBehaviour
             hitboxes[1].SetActive(true);
         }
 
+    }
+
+    void KnockDown()
+    {
+        if (g.restarted)
+        {
+            body.AddForce(
+                new Vector2(xdir * 1000, yspeed * 5),
+                ForceMode2D.Impulse
+            );
+        }
+        else body.velocity = Vector2.zero;
     }
 
     IEnumerator AttackCooldown()

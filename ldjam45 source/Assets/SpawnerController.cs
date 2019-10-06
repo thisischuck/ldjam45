@@ -5,6 +5,8 @@ using UnityEngine;
 public class SpawnerController : MonoBehaviour
 {
     public GameObject enemyParent;
+    public GameObject holder;
+    public GameScriptableObject game;
     // Start is called before the first frame update
     private Vector3 leftSpawner, rightSpawner, topLeft, topRight, midLeft, midRight;
 
@@ -26,7 +28,7 @@ public class SpawnerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!started)
+        if (!started && !game.isKnockedDown)
             StartCoroutine("SpawnerTimer");
     }
 
@@ -59,7 +61,7 @@ public class SpawnerController : MonoBehaviour
         if (list.Count == 0)
             Fill();
 
-        GameObject obj = Instantiate(enemyParent, position, this.transform.rotation);
+        GameObject obj = Instantiate(enemyParent, position, this.transform.rotation, holder.transform);
         obj.GetComponent<EnemyController>().hp = Random.Range(1, 4);
 
         if (r == 4)
