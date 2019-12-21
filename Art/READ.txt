@@ -1,0 +1,11 @@
+The "outside" limbs should be darker not lighter
+
+high attack animation. In the first hit you should see the back of him. Cause it doesn't make sense that he moves so little on the first hit
+and so much on the second.
+
+The idle is good.
+
+The movement feels more like he is walking. Also arms should move diferently
+So should do another that shows him running.
+
+Completely redo low attack
